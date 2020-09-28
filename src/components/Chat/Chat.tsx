@@ -1,30 +1,31 @@
 import React, { FC, FormEvent, useEffect, useState } from 'react';
-import io from 'socket.io-client';
 import cx from 'classnames';
 import styles from '../Chat/Chat.module.scss';
 import BasicForm from '../BasicForm/BasicForm';
 
-const socket = io('http://localhost:8080', {
-  transports: ['websocket'],
-});
-
 interface Message {
-  id: string;
+  messageId: string;
   message: string;
-}
-
-interface Messages {
-  key: Message;
+  userId: string;
+  userName: string;
 }
 
 type Optional<I> = I | null;
 
 interface User {
-  id: number;
-  username: string;
+  userId: string;
+  userName: string;
 }
 
-const Chat: FC<{ className?: string }> = (props) => {
+interface ChatProps {
+  className?: string;
+  socket: {
+    emit(newUser: string, values: { message: string }): void;
+    on(newUser: string, param2: (user: User) => void): void;
+  };
+}
+
+const Chat: FC<ChatProps> = ({ socket, className }) => {
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [user, setUser] = useState<Optional<User>>(null);
@@ -43,19 +44,23 @@ const Chat: FC<{ className?: string }> = (props) => {
     // fetch('http://localhost:8080', {
     //   method: 'GET'
     // });
-
-    socket.emit('new message', message);
+    socket.emit('new message', { ...user, message });
   };
 
   return (
     <div className={styles.chat}>
-      <div>
-        {messages.map((m: Message) => (
-          <div key={m.id}>{m.message}</div>
-        ))}
+      <div className={styles.chatContent}>
+        <div>
+          {messages.map((m: Message) => (
+            <div key={m.messageId}>
+              <span className={styles.nickname}>{m.userName}</span>
+              <span className={styles.message}>{m.message}</span>
+            </div>
+          ))}
+        </div>
       </div>
       <BasicForm
-        className={cx(styles.form, props.className)}
+        className={cx(styles.form, className)}
         formName="chatForm"
         handleSubmit={handleSubmit}
         inputName="message"

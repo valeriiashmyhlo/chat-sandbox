@@ -2,12 +2,10 @@
 const Koa = require('koa');
 const app = new Koa();
 const Router = require('koa-router');
-const router = new Router();
-const bodyParser = require('koa-bodyparser');
+// const router = new Router();
 const cors = require('@koa/cors');
 const server = require('http').createServer(app.callback());
 const { v4: uuidv4 } = require('uuid');
-const allowedOrigins = 'http://localhost:* http://192.168.1.102:*';
 const options = {
   transports: ['websocket'],
 };
@@ -17,8 +15,6 @@ app.use(cors()).use(async (ctx: any, res: any) => {
   ctx.body = 'Hello World';
 });
 // .use(router.routes())
-// .use(router.allowedMethods())
-// .use(bodyParser());
 
 // router.get('/', async (ctx: any, next: any) => {
 //   ctx.body = 'Hello World';
@@ -26,24 +22,19 @@ app.use(cors()).use(async (ctx: any, res: any) => {
 // });
 
 socketIO.on('connection', (socket: any) => {
-  socket.on('new message', (data: any) => {
-    socket.broadcast.emit('new message', {
-      id: uuidv4(),
-      message: data,
-    });
+  socket.on('new message', (message: any) => {
+    const messageId = uuidv4();
 
-    socket.emit('new message', {
-      id: uuidv4(),
-      message: data,
-    });
+    socket.broadcast.emit('new message', { ...message, messageId });
+    socket.emit('new message', { ...message, messageId });
   });
 
   socket.on('new user', (data: any) => {
-    const { username } = data;
+    const { userName } = data;
 
     socket.emit('new user', {
-      id: uuidv4(),
-      username,
+      userId: uuidv4(),
+      userName
     });
   });
 });

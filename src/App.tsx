@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import EntryForm from './components/EntryForm/EntryForm';
 import Chat from './components/Chat/Chat';
-import './App.css';
+import styles from './App.module.scss';
+import io from "socket.io-client";
+
+const socket = io('http://localhost:8080', {
+  transports: ['websocket'],
+});
 
 function App() {
   const [isLoggedIn, setLoggedIn] = useState(false);
@@ -11,11 +16,12 @@ function App() {
     <div className="App">
       {isLoggedIn ? null : (
         <EntryForm
-          className={cx({ hidden: isLoggedIn })}
+          className={cx(styles.entry, { hidden: isLoggedIn })}
           onSubmit={() => setLoggedIn(true)}
+          socket={socket}
         />
       )}
-      {isLoggedIn ? <Chat /> : null}
+      {isLoggedIn ? <Chat socket={socket} /> : null}
     </div>
   );
 }

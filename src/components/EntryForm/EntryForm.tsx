@@ -1,23 +1,24 @@
 import React, { FC } from 'react';
-import io from 'socket.io-client';
 import BasicForm from '../BasicForm/BasicForm';
 
-const socket = io('http://localhost:8080', {
-  transports: ['websocket'],
-});
+interface EntryProps {
+  className?: string;
+  onSubmit: () => void;
+  socket: { emit: (newUser: string, values: { userName: string }) => void };
+}
 
-const EntryForm: FC<{ className?: string; onSubmit: () => void }> = (props) => {
-  const handleSubmit = (values: { username: string }) => {
+const EntryForm: FC<EntryProps> = ({ socket, onSubmit, className }) => {
+  const handleSubmit = (values: { userName: string }) => {
     socket.emit('new user', values);
-    props.onSubmit();
+    onSubmit();
   };
 
   return (
     <BasicForm
-      className={props.className}
+      className={className}
       formName="entryForm"
       handleSubmit={handleSubmit}
-      inputName="username"
+      inputName="userName"
       message="Please input your nickname!"
       placeholder="Enter your nickname"
     />
