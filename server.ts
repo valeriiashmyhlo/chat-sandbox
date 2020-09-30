@@ -31,11 +31,20 @@ socketIO.on('connection', (socket: any) => {
 
   socket.on('new user', (data: any) => {
     const { userName } = data;
+    const newUserId = uuidv4();
+    const newUser = {
+      messageId: uuidv4(),
+      message: `${userName} joined the chat`,
+      userId: newUserId,
+      userName: userName
+    };
 
     socket.emit('new user', {
-      userId: uuidv4(),
+      userId: newUserId,
       userName
     });
+    socket.broadcast.emit('user joined', newUser);
+    socket.emit('user joined', newUser);
   });
 });
 

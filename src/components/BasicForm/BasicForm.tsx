@@ -23,23 +23,33 @@ const BasicForm: FC<FormProps> = ({
   placeholder,
   value,
   onChange,
-}) => (
-  <Form
-    className={cx(styles.form, className)}
-    name={formName}
-    onFinish={handleSubmit}
-  >
-    <Form.Item
-      name={inputName}
-      rules={[{ required: true, message }]}
-      className={styles.formItem}
+}) => {
+  const [form] = Form.useForm();
+
+  const submit = (values: any) => {
+    handleSubmit(values);
+    form.resetFields();
+  }
+
+  return (
+    <Form
+      form={form}
+      className={cx(styles.form, className)}
+      name={formName}
+      onFinish={submit}
     >
-      <Input placeholder={placeholder} value={value} onChange={onChange} />
-    </Form.Item>
-    <Button type="primary" htmlType="submit" className={styles.formBtn}>
-      Submit
-    </Button>
-  </Form>
-);
+      <Form.Item
+        name={inputName}
+        rules={[{ required: true, message }]}
+        className={styles.formItem}
+      >
+        <Input placeholder={placeholder} value={value} onChange={onChange} />
+      </Form.Item>
+      <Button type="primary" htmlType="submit" className={styles.formBtn}>
+        Submit
+      </Button>
+    </Form>
+  );
+}
 
 export default BasicForm;
