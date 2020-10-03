@@ -2,21 +2,9 @@ import React, { FC, FormEvent, useEffect, useState } from 'react';
 import cx from 'classnames';
 import styles from '../Chat/Chat.module.scss';
 import BasicForm from '../BasicForm/BasicForm';
-
-interface Message {
-  messageId: string;
-  message: string;
-  userId: string;
-  userName: string;
-  isUserMsg?: boolean;
-}
+import { Message, User } from '../../../types';
 
 type Optional<I> = I | null;
-
-interface User {
-  userId: string;
-  userName: string;
-}
 
 interface ChatProps {
   className?: string;
@@ -41,9 +29,18 @@ const Chat: FC<ChatProps> = ({ socket, className }) => {
       ]);
     });
 
+    socket.on('msgHistory', (history: Message[]) => {
+      setMessages(prevState => [...history, ...prevState]);
+    });
+
     socket.on('new message', (data: any) =>
       setMessages((prevState) => [...prevState, data])
     );
+
+    socket.on('user left', (msg: Message) => {
+      console.log(msg);
+      setMessages((prevState) => [...prevState, { ...msg, isUserMsg: true }])
+    });
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
