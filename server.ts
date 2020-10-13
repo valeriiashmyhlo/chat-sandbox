@@ -2,56 +2,55 @@ import { Message, User } from './types';
 
 const Koa = require('koa');
 const app = new Koa();
-const cors = require('@koa/cors');
 const server = require('http').createServer(app.callback());
 const { v4: uuidv4 } = require('uuid');
 const options = {
   transports: ['websocket'],
 };
-const socketIO = require('socket.io')(server, options);
-const msgHistory: Message[] = [];
-let user: User | null = null;
+const socket = require('socket.io')(server, options);
+const users: User[] = [];
+let messageHistory: Message[] = [];
 
-app.use(cors()).use(async (ctx: any, res: any) => {
-  ctx.body = 'Hello World';
-});
+interface MessageData {
+  message: string;
+  userId: string;
+}
 
-socketIO.on('connection', (socket: any) => {
-  socket.on('new message', (message: Message) => {
-    const messageId = uuidv4();
-    const messageInfo = { ...message, messageId };
+socket.on('connection', (client: any) => {
+  let user: User | null = null;
 
-    socket.broadcast.emit('new message', messageInfo);
-    socket.emit('new message', messageInfo);
-    msgHistory.push(messageInfo);
-  });
-
-  socket.on('new user', (data: any) => {
+  client.on('signIn', (data: any) => {
     user = {
-      userName: data.userName,
-      userId: uuidv4()
-    }
-    const userJoinMsg = {
-      ...user,
-      messageId: uuidv4(),
-      message: `${user.userName} joined the chat`
+      name: data.userName,
+      id: uuidv4(),
     };
-
-    socket.emit('new user', user);
-    socket.broadcast.emit('user joined', userJoinMsg);
-    socket.emit('user joined', userJoinMsg);
-    socket.emit('msgHistory', msgHistory);
+    users.push(user);
+    client.emit('signInSuccess', { user, users, messageHistory });
+    client.emit('userJoined', user);
+    client.broadcast.emit('userJoined', user);
   });
 
-  socket.on('disconnect', () => {
+  client.on('newMessage', ({ message, userId }: MessageData) => {
+    const messageInfo: Message = { message, userId, id: uuidv4() };
+    client.broadcast.emit('newMessage', messageInfo);
+    client.emit('newMessage', messageInfo);
+    messageHistory.push(messageInfo);
+  });
+
+  client.on('disconnect', () => {
     if (user) {
-      socket.broadcast.emit('user left', {
+      client.broadcast.emit('userLeft', {
         ...user,
         messageId: uuidv4(),
-        message: `${user.userName} left the chat`
+        message: `${user.name} left the chat`,
       });
+      users.splice(users.indexOf(user), 1);
+    }
+
+    if (users.length <= 0) {
+      messageHistory = [];
     }
   });
 });
 
-socketIO.listen('8080');
+socket.listen('8080');

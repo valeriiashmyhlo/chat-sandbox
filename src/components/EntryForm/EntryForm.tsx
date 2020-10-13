@@ -3,14 +3,14 @@ import BasicForm from '../BasicForm/BasicForm';
 
 interface EntryProps {
   className?: string;
-  onSubmit: () => void;
+  // onSubmit: () => void;
   socket: { emit: (newUser: string, values: { userName: string }) => void };
 }
 
-const EntryForm: FC<EntryProps> = ({ socket, onSubmit, className }) => {
+const EntryForm: FC<EntryProps> = ({ socket, className }) => {
   const handleSubmit = (values: { userName: string }) => {
-    socket.emit('new user', values);
-    onSubmit();
+    socket.emit('signIn', values);
+    // onSubmit();
   };
 
   return (

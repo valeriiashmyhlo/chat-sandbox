@@ -1,7 +1,7 @@
 export interface Message {
-  messageId: string;
+  id: string;
   message: string;
   userId: string;
-  userName: string;
+  // userName: string;
   isUserMsg?: boolean;
 };
