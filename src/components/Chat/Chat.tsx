@@ -22,20 +22,20 @@ const Chat: FC<ChatProps> = ({ socket, className, user, users, msgHistory }) => 
 
   useEffect(() => {
     socket.on('userJoined', (joinedUser: User) => {
-      const userJoinedMsg = {
+      const userJoinedMessage = {
         userId: joinedUser.id,
         id: uuidv4(),
         message: `${joinedUser.name} joined the chat`,
         isUserMsg: true,
       };
 
-      setMessages((prevState) => [...prevState, userJoinedMsg]);
+      setMessages((prevState) => [...prevState, userJoinedMessage]);
     });
 
     socket.on('newMessage', (msg: Message) => setMessages((prevState) => [...prevState, msg]));
 
-    socket.on('userLeft', (msg: Message) => {
-      setMessages((prevState) => [...prevState, { ...msg, isUserMsg: true }]);
+    socket.on('userLeft', ({ user, message }: { user: User, message: Message }) => {
+      setMessages((prevState) => [...prevState, message]);
     });
   }, []);
 

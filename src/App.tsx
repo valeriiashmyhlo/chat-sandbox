@@ -9,18 +9,22 @@ const socket = io('http://localhost:8080', {
   transports: ['websocket'],
 });
 
-const usersReducer = (users: { [key: string]: User }, newUsers: User[]): { [key: string]: User } => {
-  for (let user of newUsers) {
-    users = { ...users, [user.id]: user };
+type UsersState = { [key: string]: User };
+
+const usersReducer = (state: UsersState, users: User[]): UsersState => {
+  const updatedUsers = { ...state };
+
+  for (const user of users) {
+    updatedUsers[user.id] = user
   }
 
-  return users;
-};
+  return updatedUsers;
+}
 
 function App() {
   const [user, setUser] = useState<Optional<User>>(null);
   const [users, setUsers] = useReducer(usersReducer, {});
-  const [messageHistory, setMsgHistory] = useState<Message[]>([]);
+  const [messageHistory, setMessageHistory] = useState<Message[]>([]);
 
   useEffect(() => {
     socket.on(
@@ -28,16 +32,10 @@ function App() {
       ({ user, users, messageHistory }: { user: User; users: User[]; messageHistory: Message[] }) => {
         setUser(user);
         setUsers(users);
-        setMsgHistory(messageHistory);
+        setMessageHistory(messageHistory);
       }
     );
-
-    socket.on('userJoined', (user: User) => {
-      setUsers([user]);
-    });
   });
-
-  console.log(messageHistory);
 
   return (
     <div className="App">

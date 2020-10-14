@@ -24,9 +24,17 @@ socket.on('connection', (client: any) => {
       name: data.userName,
       id: uuidv4(),
     };
+    const userJoinedMessage = {
+      userId: user.id,
+      id: uuidv4(),
+      message: `${user.name} joined the chat`,
+      isUserMsg: true,
+    };
+
     users.push(user);
+    messageHistory.push(userJoinedMessage);
+
     client.emit('signInSuccess', { user, users, messageHistory });
-    client.emit('userJoined', user);
     client.broadcast.emit('userJoined', user);
   });
 
@@ -39,11 +47,14 @@ socket.on('connection', (client: any) => {
 
   client.on('disconnect', () => {
     if (user) {
-      client.broadcast.emit('userLeft', {
-        ...user,
-        messageId: uuidv4(),
-        message: `${user.name} left the chat`,
-      });
+      const userLeftMessage = {
+        userId: user.id,
+        id: uuidv4(),
+        message: `${user.name} joined the chat`,
+        isUserMsg: true,
+      };
+
+      client.broadcast.emit('userLeft', { user, userLeftMessage });
       users.splice(users.indexOf(user), 1);
     }
 
