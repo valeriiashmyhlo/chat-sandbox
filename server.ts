@@ -23,6 +23,7 @@ socket.on('connection', (client: any) => {
     user = {
       name: data.userName,
       id: uuidv4(),
+      isOnline: true
     };
     const userJoinedMessage = {
       userId: user.id,
@@ -35,7 +36,8 @@ socket.on('connection', (client: any) => {
     messageHistory.push(userJoinedMessage);
 
     client.emit('signInSuccess', { user, users, messageHistory });
-    client.broadcast.emit('userJoined', user);
+    client.broadcast.emit('updateUser', user);
+    client.broadcast.emit('newMessage', userJoinedMessage);
   });
 
   client.on('newMessage', ({ message, userId }: MessageData) => {
@@ -50,12 +52,14 @@ socket.on('connection', (client: any) => {
       const userLeftMessage = {
         userId: user.id,
         id: uuidv4(),
-        message: `${user.name} joined the chat`,
+        message: `${user.name} left the chat`,
         isUserMsg: true,
       };
+      const userIndex = users.indexOf(user);
+      users[userIndex].isOnline = false;
 
-      client.broadcast.emit('userLeft', { user, userLeftMessage });
-      users.splice(users.indexOf(user), 1);
+      client.broadcast.emit('updateUser', user);
+      client.broadcast.emit('newMessage', userLeftMessage);
     }
 
     if (users.length <= 0) {

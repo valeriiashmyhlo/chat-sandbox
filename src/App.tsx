@@ -10,16 +10,15 @@ const socket = io('http://localhost:8080', {
 });
 
 type UsersState = { [key: string]: User };
-
 const usersReducer = (state: UsersState, users: User[]): UsersState => {
   const updatedUsers = { ...state };
 
   for (const user of users) {
-    updatedUsers[user.id] = user
+    updatedUsers[user.id] = user;
   }
 
   return updatedUsers;
-}
+};
 
 function App() {
   const [user, setUser] = useState<Optional<User>>(null);
@@ -35,14 +34,16 @@ function App() {
         setMessageHistory(messageHistory);
       }
     );
-  });
+
+    socket.on('updateUser', (user: User) => setUsers([user]));
+  }, []);
 
   return (
-    <div className="App">
+    <div className={styles.app}>
       {user ? (
         <Chat socket={socket} user={user} users={users} msgHistory={messageHistory} />
       ) : (
-        <EntryForm className={styles.entry} socket={socket} />
+        <EntryForm socket={socket} />
       )}
     </div>
   );

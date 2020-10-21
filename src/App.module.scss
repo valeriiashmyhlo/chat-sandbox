@@ -1,9 +1,9 @@
-.hidden {
-  display: none;
+.app {
+  min-width: 100vw;
+  min-height: 100vh;
+  background-color: aliceblue;
 }
 
-.entry {
-  width: 400px;
-  padding-top: 24px;
-  margin: 20px auto;
+.hidden {
+  display: none;
 }
